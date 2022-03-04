@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  app:
+    build: .
+    ports:
+     - 5000:5000
+    depends_on:
+      - db
+    volumes:
+      - ./app.py:/app/app.py
+  db:
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+     MYSQL_ROOT_PASSWORD: "passw"
+     MYSQL_DATABASE: "studentdb"
+     MYSQL_USER: "usuariodb"
+     MYSQL_PASSWORD: "secret12345"
+    ports:
+     - 3306:3306
+    expose:
+     - 3306
+    volumes:
+     - my-db:/var/lib/mysql
+
+volumes:
+ my-db:
