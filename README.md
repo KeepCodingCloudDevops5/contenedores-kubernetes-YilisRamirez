@@ -391,4 +391,70 @@ NAME                                             DESIRED   CURRENT   READY   AGE
 replicaset.apps/flaskapp-deployment-7bd7ccf9b6   2         2         2       165m
 ```
 
+<h1>Creating an Ingress Resource</h1>
+I have used the anotation rewrite-target to access Flask service 
+
+```bash
+piVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: flask-ingress
+  namespace: flask-api
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: '/create-table'
+        pathType: Prefix
+        backend:
+          service:
+            name: flask-service
+            port:
+              number: 5000
+      - path: '/add-students'
+        pathType: Prefix
+        backend:
+          service:
+            name: flask-service
+            port:
+              number: 5000
+      - path: '/'
+        pathType: Prefix
+        backend:
+          service:
+            name: flask-service
+            port:
+              number: 5000
 ```
+Checking the service
+
+```bash
+kubectl describe svc -n flask-api
+Name:                     flask-service
+Namespace:                flask-api
+Labels:                   app=flaskapp
+Annotations:              cloud.google.com/neg: {"ingress":true}
+Selector:                 app=flaskapp
+Type:                     LoadBalancer
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.24.10.102
+IPs:                      10.24.10.102
+LoadBalancer Ingress:     35.233.41.185
+Port:                     <unset>  5000/TCP
+TargetPort:               5000/TCP
+NodePort:                 <unset>  31989/TCP
+Endpoints:                10.20.1.10:5000,10.20.1.12:5000
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:
+  Type    Reason                Age                  From                Message
+  ----    ------                ----                 ----                -------
+  Normal  Attach                26m (x4 over 3h57m)  neg-controller      Attach 1 network endpoint(s) (NEG "k8s1-b48afdb4-flask-api-flask-service-5000-bdedbda9" in zone "europe-west1-c")
+  Normal  Detach                26m (x3 over 3h27m)  neg-controller      Detach 1 network endpoint(s) (NEG "k8s1-b48afdb4-flask-api-flask-service-5000-bdedbda9" in zone "europe-west1-b")
+  Normal  EnsuringLoadBalancer  23m (x5 over 22h)    service-controller  Ensuring load balancer
+  Normal  EnsuredLoadBalancer   23m (x5 over 22h)    service-controller  Ensured load balancer
+```
+
