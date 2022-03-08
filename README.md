@@ -118,7 +118,7 @@ This command will output a string of characters, as shown below.
 ```bash
  c2VjcmV0MTIU=
 ```
-Once encoded the rootpassword, a secret file is deployeed for each namespace created.
+Once the rootpassword is encoded, we deployeed a secret file for each namespace created.
 
 ```bash
 apiVersion: v1
