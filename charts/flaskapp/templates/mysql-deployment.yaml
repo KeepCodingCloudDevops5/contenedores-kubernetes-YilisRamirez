@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "flaskapp.fullname" . }}-db
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "flaskapp.selectorLabels" . | nindent 6 }}
+      layer: db
+  strategy:
+    type: Recreate 
+  template:
+    metadata:
+      labels:
+        {{- include "flaskapp.selectorLabels" . | nindent 8 }}
+        layer: db
+    spec:
+      containers:
+      - image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "flaskapp.fullname" . }}-secret
+              key: rootpassword
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim

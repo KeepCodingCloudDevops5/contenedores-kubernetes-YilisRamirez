@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  dbname: {{ .Values.dbname }}
+  host: {{ .Values.host }}
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: {{ .Release.Name }}-cm
+  namespace: {{ .Release.Namespace }}

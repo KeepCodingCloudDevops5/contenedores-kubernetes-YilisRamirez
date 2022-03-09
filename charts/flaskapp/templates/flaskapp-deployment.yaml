@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "flaskapp.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "flaskapp.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "flaskapp.selectorLabels" . | nindent 6 }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        {{- include "flaskapp.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: flaskapp
+          image: "{{ .Values.image }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MYSQL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-cm
+                  key: host
+            - name: MYSQL_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-cm
+                  key: dbname
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Files.AsSecrets }}
+                  key: rootpassword
+
