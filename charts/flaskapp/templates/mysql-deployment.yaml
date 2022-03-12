@@ -9,7 +9,7 @@ spec:
       {{- include "flaskapp.selectorLabels" . | nindent 6 }}
       layer: db
   strategy:
-    type: Recreate 
+    type: Recreate
   template:
     metadata:
       labels:
@@ -34,4 +34,4 @@ spec:
       volumes:
       - name: mysql-persistent
         persistentVolumeClaim:
-          claimName: mysql-pv-claim
+          claimName: {{ include "flaskapp.fullname" . }}-mysql-pv-claim
