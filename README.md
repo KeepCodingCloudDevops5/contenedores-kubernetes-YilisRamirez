@@ -735,3 +735,6 @@ flask-ha           Deployment/flask-service          <unknown>/80%   1         1
 project-flaskapp   Deployment/project-flaskapp-app   <unknown>/80%   1         10        1          3m42s
 ```
 This is how my kubernetes cluster looks like once whole the manifests have been deployed:
+
+![kubernetes](https://user-images.githubusercontent.com/39458920/158015364-1068a695-d314-4f82-a266-6d2401bbb089.JPG)
+![services kubernetes](https://user-images.githubusercontent.com/39458920/158015370-5eb37562-fb24-4334-906f-e05712609339.JPG)
