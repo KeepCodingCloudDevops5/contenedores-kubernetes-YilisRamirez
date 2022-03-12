@@ -734,3 +734,4 @@ NAME               REFERENCE                         TARGETS         MINPODS   M
 flask-ha           Deployment/flask-service          <unknown>/80%   1         10        0          20m
 project-flaskapp   Deployment/project-flaskapp-app   <unknown>/80%   1         10        1          3m42s
 ```
+This is how my kubernetes cluster looks like once whole the manifests have been deployed:
