@@ -733,8 +733,9 @@ kubectl get hpa
 NAME               REFERENCE                         TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
 flask-ha           Deployment/flask-service          <unknown>/80%   1         10        0          20m
 project-flaskapp   Deployment/project-flaskapp-app   <unknown>/80%   1         10        1          3m42s
+````
+You can also get all the manifest through this command:
 
-YOu can also get all the manifest through this command:
 ```bash
 helm get manifest project
 ```
@@ -775,14 +776,8 @@ spec:
     requests:
       storage: 20Gi
 ---
+```
 
-# Source: flaskapp/templates/service-flask.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: project-flaskapp-app
-```
-```
 This is how my kubernetes cluster looks like once whole the manifests have been deployed:
 
 ![kubernetes](https://user-images.githubusercontent.com/39458920/158015364-1068a695-d314-4f82-a266-6d2401bbb089.JPG)
