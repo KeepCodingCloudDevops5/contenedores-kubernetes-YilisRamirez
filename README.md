@@ -775,6 +775,7 @@ spec:
     requests:
       storage: 20Gi
 ---
+
 # Source: flaskapp/templates/service-flask.yaml
 apiVersion: v1
 kind: Service
