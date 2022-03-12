@@ -141,6 +141,7 @@ docker image ls
 REPOSITORY                    TAG          IMAGE ID       CREATED          SIZE
 ramirezy/flask-app          latest       74a15c780d02   36 minutes ago     250MB
 ```
+Once built the flask image, I have uploaded it in my Docker hub repository to make it available to pull.
 
 <h1>Docker compose</h1>
 
