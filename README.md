@@ -707,7 +707,7 @@ STATUS: deployed
 REVISION: 1
 TEST SUITE: None
 ```
-Now we have to verify whole the manifests are running as expected.
+Now we have to verify all the manifests are running as expected.
 
 ```bash
 kubectl get pod
@@ -733,6 +733,54 @@ kubectl get hpa
 NAME               REFERENCE                         TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
 flask-ha           Deployment/flask-service          <unknown>/80%   1         10        0          20m
 project-flaskapp   Deployment/project-flaskapp-app   <unknown>/80%   1         10        1          3m42s
+
+YOu can also get all the manifest through this command:
+```bash
+helm get manifest project
+```
+```bash
+---
+# Source: flaskapp/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: project-flaskapp-secret
+  namespace: default
+type: Opaque
+data:
+  rootpassword: "cGFzc3c="
+---
+# Source: flaskapp/templates/configmap.yaml
+apiVersion: v1
+data:
+  dbname: studentdb
+  host: db
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: project-flaskapp-cm
+  namespace: default
+---
+# Source: flaskapp/templates/mysql-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: project-flaskapp-mysql-pv-claim
+  namespace: default
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+# Source: flaskapp/templates/service-flask.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: project-flaskapp-app
+```
 ```
 This is how my kubernetes cluster looks like once whole the manifests have been deployed:
 
