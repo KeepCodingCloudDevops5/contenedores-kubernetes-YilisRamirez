@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask
 from flask_mysqldb import MySQL
 import os
 
@@ -18,7 +18,7 @@ def createtable():
                                              name VARCHAR(50) NOT NULL,
                                              email VARCHAR(100) NOT NULL,
                                              phone INT NOT NULL,
-                                             address VARCHAR(250) NOT NULL, PRIMARY KEY (`id`));''')
+                                             address VARCHAR(250) NOT NULL, PRIMARY KEY (`id`)) ''')
     cursor.close()
     return 'Tabla Creada'
 
@@ -26,26 +26,26 @@ def createtable():
 @app.route('/add-students')
 def addstudents():
     cursor = mysql.connection.cursor()
-    cursor.execute(''' INSERT INTO students (id,name,email,phone,address) VALUES(1,'Pedro Romero','pedro_romero@gmail.com',657798564,'Sant JOan DEspi');
-                       INSERT INTO students (id,name,email,phone,address) VALUES(2,'Nazaret Olivieri', 'nazaret_olivieri@gmail.com',610432987,'Cornella de Llobregat'); ''')
+    cursor.execute(''' INSERT INTO students (id,name,email,phone,address) VALUES(1,'Pedro Romero','pedro_romero@gmail.com',657798564,'Sant Joan DEspi');
+                       INSERT INTO students (id,name,email,phone,address) VALUES(2,'Nazaret Olivieri','nazaret_olivieri@gmail.com',610432987,'Cornella de Llobregat'); commit; ''')
     cursor.close()
-    return 'Estudiantes añadidos'
+    return 'Estudiantes añadidos del primer año'
 
 
 @app.route('/')
 def students():
+    s = "<table style='border:1px solid red'>"
+
     cursor = mysql.connection.cursor()
     cursor.execute(''' SELECT * FROM students; ''')
     for row in cursor.fetchall():
-        print('id:', row[0])
-        print('name:', row[1])
-        print('email:', row[2])
-        print('phone:', row[3])
-        print('address:', row[4])
-        print("\n")
+        s = s + "<tr>"
+        for x in row:
+            s = s + "<td>" + str(x) + "</td>"
+        s = s + "</tr>"
 
     cursor.close()
-    return ('Todos los estudiantes mostrados')
+    return "<html><body>" + s + "</body></html>"
 
 @app.route('/ping')
 def ping():
