@@ -5,5 +5,5 @@ data:
 kind: ConfigMap
 metadata:
   creationTimestamp: null
-  name: {{ .Release.Name }}-cm
+  name: {{ include "flaskapp.fullname" . }}-cm
   namespace: {{ .Release.Namespace }}
