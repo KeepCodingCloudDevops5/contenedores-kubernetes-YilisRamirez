@@ -600,6 +600,26 @@ spec:
 Once we have the application deployed in Kubernetes, now we are going to package the code with Helm Charts.
 
 You may need to install it before to proceed, for more info you can check this <a href="https://helm.sh/docs/intro/install/">Quickstart guide </a>
+The working direcory of Helm chart
+
+```bash
+└── flaskapp
+    ├── charts
+    ├── Chart.yaml
+    ├── templates
+    │   ├── configmap.yaml
+    │   ├── flaskapp-deployment.yaml
+    │   ├── _helpers.tpl
+    │   ├── hpa.yaml
+    │   ├── ingress.yaml
+    │   ├── mysql-deployment.yaml
+    │   ├── mysql-pvc.yaml
+    │   ├── secret.yaml
+    │   ├── service-flask.yaml
+    │   ├── service-mysql.yaml
+    │   └── tests
+    └── values.yaml
+```
 
 First of all, you would need to create the project name, where will be deployed the helm configuration:
 
