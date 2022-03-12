@@ -1,8 +1,10 @@
 # contenedores-kubernetes-YilisRamirez
+<b>GCP Project id:</b> 	automatic-array-337820
 <h1>Containers practice</h1>
 
 This practice is intended to deploy a microservice that is able to read and write in a database. To implement this I built a dockerized flask application running in one container which points out toward the database running in another container.
-<img src="desktop/microservice.jpg">
+
+![flask app](https://user-images.githubusercontent.com/39458920/157893436-9865f77f-119d-4319-a9b1-e089a7b0c4d7.png)
 
 <b>Requirements:</b><br>
 <ul>
@@ -38,7 +40,60 @@ mkdir flask-mysql-app
  ```
 First of all, I am going to define the app.py file to configure flask app and the database settings for establishing the communication between them.
 Also, there has been defined environment variables(hardcoded) for sensitive information such as, MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST and MYSQL_DB to make it configurable from only one file.
-![image](https://user-images.githubusercontent.com/39458920/156873887-3fb40a05-def5-4ac3-b63c-c8826a18b203.png)
+```bash
+from flask import Flask
+from flask_mysqldb import MySQL
+import os
+
+app = Flask(__name__)
+
+app.config['MYSQL_USER'] = os.environ['MYSQL_USER']
+app.config['MYSQL_PASSWORD'] = os.environ['MYSQL_PASSWORD']
+app.config['MYSQL_HOST'] = os.environ['MYSQL_HOST']
+app.config['MYSQL_DB'] = os.environ['MYSQL_DB']
+mysql = MySQL(app)
+
+
+@app.route('/create-table')
+def createtable():
+    cursor = mysql.connection.cursor()
+    cursor.execute(''' CREATE TABLE students(id INT NOT NULL AUTO_INCREMENT,
+                                             name VARCHAR(50) NOT NULL,
+                                             email VARCHAR(100) NOT NULL,
+                                             phone INT NOT NULL,
+                                             address VARCHAR(250) NOT NULL, PRIMARY KEY (`id`)) ''')
+    cursor.close()
+    return 'Tabla Creada'
+
+
+@app.route('/add-students')
+def addstudents():
+    cursor = mysql.connection.cursor()
+    cursor.execute(''' INSERT INTO students (id,name,email,phone,address) VALUES(1,'Pedro Romero','pedro_romero@gmail.com',657798564,'Sant Joan DEspi');
+                       INSERT INTO students (id,name,email,phone,address) VALUES(2,'Nazaret Olivieri','nazaret_olivieri@gmail.com',610432987,'Cornella de Llobregat'); commit; ''')
+    cursor.close()
+    return 'Estudiantes añadidos del primer año'
+
+
+@app.route('/')
+def students():
+    s = "<table style='border:1px solid red'>"
+
+    cursor = mysql.connection.cursor()
+    cursor.execute(''' SELECT * FROM students; ''')
+    for row in cursor.fetchall():
+        s = s + "<tr>"
+        for x in row:
+            s = s + "<td>" + str(x) + "</td>"
+        s = s + "</tr>"
+
+    cursor.close()
+    return "<html><body>" + s + "</body></html>"
+    
+@app.route('/ping')
+def ping():
+    return 'pong
+```
 
 Now into the requirements file, I included the required libraries for app.py file
 ```bash
@@ -51,9 +106,77 @@ There was also introduced the variable <b>FLASK_ENV=development</b>, which reloa
 
 ![dockerfile](https://user-images.githubusercontent.com/39458920/156876664-29752dc3-e913-4043-9713-5aa6b473b46e.JPG)
 
+<h1>Creating a Multistage  Docker build for Flask app</h1>
+
+I have adjusted the Dockerfile to make the image smaller.
+
+```bash
+FROM python:3.7-alpine
+
+WORKDIR /app
+
+COPY requirements.txt requirements.txt
+
+RUN apk add --no-cache gcc musl-dev linux-headers curl mysql-client mysql-dev
+RUN pip install -r requirements.txt
+
+COPY . ./
+
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=development
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV MYSQL_USER=usuariodb
+ENV MYSQL_PASSWORD=''
+ENV MYSQL_HOST=db
+ENV MYSQL_DB=studentdb
+
+EXPOSE 5000
+
+CMD flask run
+```
+```bash
+docker build -t flask-app .
+
+docker image ls
+REPOSITORY                    TAG          IMAGE ID       CREATED          SIZE
+ramirezy/flask-app          latest       74a15c780d02   36 minutes ago     250MB
+```
+
+<h1>Docker compose</h1>
+
 Now the final part is create the docker compose file, where are specified the services for flask and MySQL app, the container's image, the environments, ports, and volumenes to make it persistents for both database and flask app.
 
-![docker-compose](https://user-images.githubusercontent.com/39458920/156877070-c236ed9c-e1e6-424f-b38b-c5c98fb00e48.JPG)
+```bash
+version: '3.9'
+
+services:
+  app:
+    build: .
+    ports:
+     - 5000:5000
+    depends_on:
+      - db
+    volumes:
+      - ./app.py:/app/app.py
+  db:
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+     MYSQL_ROOT_PASSWORD: "passw"
+     MYSQL_DATABASE: "studentdb"
+     MYSQL_USER: "usuariodb"
+     MYSQL_PASSWORD: ""
+    ports:
+     - 3306:3306
+    expose:
+     - 3306
+    volumes:
+     - /my-db:/var/lib/mysql
+
+volumes:
+ my-db:
+ ```
 
 Once deployed the dockerfile, docker compose, and any other the files required, now you can run the application through the command below:
  
@@ -87,9 +210,8 @@ You will see the following output on your Unix terminal/browser:
  http://172.18.0.3:5000/
  ```
  You will see the following output on your Unix terminal/browser:
- 
- ![table creation](https://user-images.githubusercontent.com/39458920/156878135-58fc7b0c-13e9-4c72-94eb-0a32c949fae7.JPG)
- 
+ ![output_db](https://user-images.githubusercontent.com/39458920/157477439-3835c41a-8769-4a76-9d30-eead3e4323c6.JPG)
+  
 <h1>Verifying the logs for database and flask app are being sent to standard output (STDOUT/STDERR)</h1>
 
 ![mysql_logs](https://user-images.githubusercontent.com/39458920/156889548-cbc012dc-a797-4328-9157-92150338a255.JPG)
@@ -267,7 +389,7 @@ I have specified the variables MYSQL_HOST and MYSQL_DB into the configmap config
 apiVersion: v1
 data:
   dbname: studentdb
-  host: mysql.database:3306
+  host: db
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -278,6 +400,7 @@ metadata:
 ```bash
 k create -f configmap.yaml
 ```
+
 <h1>Deploying Flask app in Kubernetess</h1>
 Now I set the environment variales in this deployment, using the values specified in the secret and configmap file.
 The flask image was built from Dockerfile configuration.
@@ -294,7 +417,7 @@ spec:
   selector:
     matchLabels:
       app: flaskapp
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:
@@ -302,7 +425,7 @@ spec:
     spec:
       containers:
         - name: flaskapp
-          image: ramirezy/flask-kubernetes
+          image: ramirezy/flask-app
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
@@ -332,7 +455,6 @@ kubectl create -f flaskapp-deployment.yaml
 kubectl get pods -n flask-api
 NAME                                   READY   STATUS    RESTARTS   AGE
 flaskapp-deployment-7bd7ccf9b6-h254l   1/1     Running   0          151m
-flaskapp-deployment-7bd7ccf9b6-m26jv   1/1     Running   0          151m
 ```
 Creating a service to expose the deployment ousite of the cluster through a LoadBalancer.
 
@@ -378,48 +500,35 @@ Flask instance
 ```bash
 kubectl get all -n flask-api
 NAME                                       READY   STATUS    RESTARTS   AGE
-pod/flaskapp-deployment-7bd7ccf9b6-h254l   1/1     Running   0          165m
-pod/flaskapp-deployment-7bd7ccf9b6-m26jv   1/1     Running   0          165m
+pod/flaskapp-deployment-5fcb4ddbcf-qxj5x   1/1     Running   0          67m
 
-NAME                    TYPE           CLUSTER-IP   EXTERNAL-IP     PORT(S)          AGE
-service/flask-service   LoadBalancer   10.24.2.84   35.233.41.185   8080:30795/TCP   117m
+NAME                    TYPE           CLUSTER-IP     EXTERNAL-IP    PORT(S)          AGE
+service/flask-service   LoadBalancer   10.80.11.168   35.240.60.60   5000:30209/TCP   67m
 
 NAME                                  READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/flaskapp-deployment   2/2     2            2           165m
+deployment.apps/flaskapp-deployment   1/1     1            1           67m
 
 NAME                                             DESIRED   CURRENT   READY   AGE
-replicaset.apps/flaskapp-deployment-7bd7ccf9b6   2         2         2       165m
+replicaset.apps/flaskapp-deployment-5fcb4ddbcf   1         1         1       67m
 ```
 
 <h1>Creating an Ingress Resource</h1>
-I have used the anotation rewrite-target to access Flask service 
+You would need to install the ingress controller to expose the app to the internet.
+The anotation used is <b>kubernetes.io/ingress.class: nginx</b> to access Flask service 
 
 ```bash
-piVersion: networking.k8s.io/v1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: flask-ingress
   namespace: flask-api
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: nginx
 spec:
   rules:
+  -host: foo.bar.com
   - http:
       paths:
-      - path: '/create-table'
-        pathType: Prefix
-        backend:
-          service:
-            name: flask-service
-            port:
-              number: 5000
-      - path: '/add-students'
-        pathType: Prefix
-        backend:
-          service:
-            name: flask-service
-            port:
-              number: 5000
       - path: '/'
         pathType: Prefix
         backend:
@@ -428,11 +537,20 @@ spec:
             port:
               number: 5000
 ```
-Checking the service
+Checking ingress
+
+```bash
+k get ingress -n flask-api
+NAME            CLASS    HOSTS         ADDRESS         PORTS   AGE
+flask-ingress   <none>   foo.bar.com   35.241.175.40   80      56m
+````
+Now we can test the application with the IP address 32.241.175.40
+
+AS per the log below, we can see the ingress controller is enabled
 
 ```bash
 kubectl describe svc -n flask-api
-Name:                     flask-service
+ame:                     flask-service
 Namespace:                flask-api
 Labels:                   app=flaskapp
 Annotations:              cloud.google.com/neg: {"ingress":true}
@@ -440,22 +558,159 @@ Selector:                 app=flaskapp
 Type:                     LoadBalancer
 IP Family Policy:         SingleStack
 IP Families:              IPv4
-IP:                       10.24.10.102
-IPs:                      10.24.10.102
-LoadBalancer Ingress:     35.233.41.185
+IP:                       10.80.11.168
+IPs:                      10.80.11.168
+LoadBalancer Ingress:     35.240.60.60
 Port:                     <unset>  5000/TCP
 TargetPort:               5000/TCP
-NodePort:                 <unset>  31989/TCP
-Endpoints:                10.20.1.10:5000,10.20.1.12:5000
+NodePort:                 <unset>  30209/TCP
+Endpoints:                10.76.0.13:5000
 Session Affinity:         None
 External Traffic Policy:  Cluster
 Events:
-  Type    Reason                Age                  From                Message
-  ----    ------                ----                 ----                -------
-  Normal  Attach                26m (x4 over 3h57m)  neg-controller      Attach 1 network endpoint(s) (NEG "k8s1-b48afdb4-flask-api-flask-service-5000-bdedbda9" in zone "europe-west1-c")
-  Normal  Detach                26m (x3 over 3h27m)  neg-controller      Detach 1 network endpoint(s) (NEG "k8s1-b48afdb4-flask-api-flask-service-5000-bdedbda9" in zone "europe-west1-b")
-  Normal  EnsuringLoadBalancer  23m (x5 over 22h)    service-controller  Ensuring load balancer
-  Normal  EnsuredLoadBalancer   23m (x5 over 22h)    service-controller  Ensured load balancer
+  Type    Reason                Age   From                Message
+  ----    ------                ----  ----                -------
+  Normal  EnsuringLoadBalancer  59m   service-controller  Ensuring load balancer
+  Normal  EnsuredLoadBalancer   58m   service-controller  Ensured load balancer
+
+```
+The IP address routes the traffic to Flask app
+
+![flaskapp](https://user-images.githubusercontent.com/39458920/157866360-94608a46-2007-4e38-9231-a7a73daefe45.JPG)
+
+<h1>Horizontal Autoscaling</h1>
+We have implemented the following autoscaling for the application Pod in case it needs more load, then HPA will increase more pods automatically.
+
+```bash
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: flask-ha
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: flask-service
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
 ```
 
-![ingress](https://user-images.githubusercontent.com/39458920/157291047-94725f3b-3c5c-4047-a183-3e16de3c0d5e.JPG)
+<h1>Helm Charts</h1>
+Once we have the application deployed in Kubernetes, now we are going to package the code with Helm Charts.
+
+You may need to install it before to proceed, for more info you can check this <a href="https://helm.sh/docs/intro/install/">Quickstart guide </a>
+
+First of all, you would need to create the project name, where will be deployed the helm configuration:
+
+```bash
+helm create flaskapp
+```
+
+To build the Heml we are going to package these files:
+
+<ul>
+<li> configmap.yaml</li>
+<li>laskapp-deployment.yaml</li>
+<li>ingress.yaml </li>
+<li>mysql-deployment.yaml </li>
+<li>secret.yaml </li>
+<li> service-flask.yaml </li>
+<li> service-mysql.yaml </li>
+</lu>
+
+The main objects and helpers used to pass our files to metadata were as follows:
+
+<ul>
+<li> {{ include "flaskapp.fullname" . }}</li>
+<li>{{ .Release.Namespace }}</li>
+<li>{{- include "flaskapp.labels" . | nindent 4 }} --> To match the labels and selector labels </li>
+<li>{{ .Values.image.name }}</li>
+<li>{{- if .Values.ingress.enabled -}} --> To enable the ingress controller </li>
+</lu>
+
+
+Please have in mind while we are passing the teamplates in metada, we should be updating the values file to have it synchronized and to make it configurable from a single file.
+
+```bash
+#Ingress
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: foo.bar.com
+      paths:
+      - "/"
+# Secret
+db:
+ rootpassword: passw
+
+# Configmap
+dbname: studentdb
+host: db
+
+# Deployment
+replicaCount: 1
+image:
+   name: ramirezy/flask-app
+   tag: "1.0"
+image:
+   name: mysql
+   tag: "5.6"
+
+# Service
+service:
+  type: "LoadBalancer"
+  port: 5000
+  port: 3306
+```
+
+Once we have all the files compiled we can test it with the following commands:
+
+```bash
+helm template --debug flaskapp
+```
+
+After we have cleaned up any error we might have found, we can proceed to install the Helm chart with the command below:
+
+```bash
+helm install project flaskapp
+```
+You will see the output.
+
+```bash
+NAME: project
+LAST DEPLOYED: Fri Mar 11 19:13:35 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+```
+Now we have to verify whole the manifests are running as expected.
+
+```bash
+kubectl get pod
+NAME                                    READY   STATUS    RESTARTS   AGE
+project-flaskapp-app-5788b4f85b-s68zt   1/1     Running   3          50s
+project-flaskapp-db-6744b7d55d-4rvbw    1/1     Running   0          50s
+```
+```bash
+kubectl get service
+NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)          AGE
+chart-flaskapp-db      ClusterIP      None           <none>          3306/TCP         6h
+kubernetes             ClusterIP      10.80.0.1      <none>          443/TCP          22h
+project-flaskapp-app   LoadBalancer   10.80.15.217   35.195.175.88   3306:31510/TCP   71s
+project-flaskapp-db    ClusterIP      None           <none>          3306/TCP         71s
+```
+```bash
+kubectl get ingress
+NAME               CLASS    HOSTS         ADDRESS         PORTS   AGE
+project-flaskapp   <none>   foo.bar.com   35.241.175.40   80      92s
+```
+```bash
+kubectl get hpa
+NAME               REFERENCE                         TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+flask-ha           Deployment/flask-service          <unknown>/80%   1         10        0          20m
+project-flaskapp   Deployment/project-flaskapp-app   <unknown>/80%   1         10        1          3m42s
+```
