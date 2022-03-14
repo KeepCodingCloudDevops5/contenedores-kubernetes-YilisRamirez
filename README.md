@@ -4,7 +4,7 @@
 
 This practice is intended to deploy a microservice that is able to read and write in a database. To implement this I built a dockerized flask application running in one container which points out toward the database running in another container.
 
-![flask app](https://user-images.githubusercontent.com/39458920/157893436-9865f77f-119d-4319-a9b1-e089a7b0c4d7.png)
+![flask app_v01](https://user-images.githubusercontent.com/39458920/158245730-c86f330d-4ed3-4795-ae9d-adb225c797a5.jpg)
 
 <b>Requirements:</b><br>
 <ul>
