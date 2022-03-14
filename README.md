@@ -514,8 +514,7 @@ replicaset.apps/flaskapp-deployment-5fcb4ddbcf   1         1         1       67m
 ```
 
 <h1>Creating an Ingress Resource</h1>
-You would need to install the ingress controller to expose the app to the internet.
-The anotation used is <b>kubernetes.io/ingress.class: nginx</b> to access Flask service 
+I create an ingress resource with anotation <b>kubernetes.io/ingress.class: nginx</b> to access Flask service 
 
 ```bash
 apiVersion: networking.k8s.io/v1
@@ -801,6 +800,7 @@ Forwarding from [::1]:5000 -> 5000
 Handling connection for 5000
 Handling connection for 5000
 ```
+![app_localhost](https://user-images.githubusercontent.com/39458920/158238393-6d8eb13b-8803-455f-b234-25e4f1ed94ab.JPG)
 
 This is how my kubernetes cluster looks like once whole the manifests have been deployed:
 
