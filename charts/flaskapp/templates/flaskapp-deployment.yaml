@@ -18,7 +18,7 @@ spec:
         layer: app
     spec:
       containers:
-        - image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.version }}"
+        - image: {{ .Values.image.app }}
           name: flaskapp
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -38,4 +38,9 @@ spec:
               valueFrom:
                secretKeyRef:
                 name: {{ include "flaskapp.fullname" . }}-secret
-                key: rootpassword
+                key: userpassword
+            - name: MYSQL_USER
+              valueFrom:
+               secretKeyRef:
+                name: {{ include "flaskapp.fullname" . }}-secret
+                key: username
