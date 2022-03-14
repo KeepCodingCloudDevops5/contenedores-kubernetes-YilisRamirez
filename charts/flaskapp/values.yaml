@@ -9,20 +9,19 @@ ingress:
       - "/"
 # Secret
 db:
- rootpassword: passw
+  rootpassword: passw
+  userpassword: secret12345
+  username: usuariodb
 
 # Configmap
 dbname: studentdb
-host: db
+host: mysql
 
 # Deployment
 replicaCount: 1
 image:
-  registry: ramirezy
-  repository: flask-app
-  version: "latest"
-  name: mysql
-  tag: "5.6"
+  app: "ramirezy/flask-app:latest"
+  db: "mysql:5.6"
   pullPolicy: IfNotPresent
 
 # Service
