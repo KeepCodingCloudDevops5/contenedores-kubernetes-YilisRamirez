@@ -651,10 +651,10 @@ The main objects and helpers used to pass our files to metadata were as follows:
 </lu>
 
 
-Please have in mind while we are passing the teamplates in metada, we should be updating the values file to have it synchronized and to make it configurable from a single file.
+Please have in mind while we are passing the templates in metada, we should be updating the values file to have it aligned and to make it configurable from a single file.
 
 ```bash
-#Ingress
+# Ingress
 ingress:
   enabled: true
   annotations:
@@ -665,26 +665,33 @@ ingress:
       - "/"
 # Secret
 db:
- rootpassword: passw
+  rootpassword: passw
+  userpassword: secret12345
+  username: usuariodb
 
 # Configmap
 dbname: studentdb
-host: db
+host: mysql
 
 # Deployment
 replicaCount: 1
 image:
-   name: ramirezy/flask-app
-   tag: "1.0"
-image:
-   name: mysql
-   tag: "5.6"
+  app: "ramirezy/flask-app:latest"
+  db: "mysql:5.6"
+  pullPolicy: IfNotPresent
 
 # Service
 service:
   type: "LoadBalancer"
-  port: 5000
+  app: 5000
   port: 3306
+
+# Autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
 ```
 
 Once we have all the files compiled we can test it with the following commands:
@@ -751,12 +758,14 @@ metadata:
 type: Opaque
 data:
   rootpassword: "cGFzc3c="
+  userpassword: "c2VjcmV0MTIzNDU="
+  username: "dXN1YXJpb2Ri"
 ---
 # Source: flaskapp/templates/configmap.yaml
 apiVersion: v1
 data:
   dbname: studentdb
-  host: db
+  host: project-flaskapp-db
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -777,6 +786,20 @@ spec:
     requests:
       storage: 20Gi
 ---
+```
+After deploying the helm chart, we apply a port-forward towards port 5000 to test the application:
+<ul>
+<li>http://localhost:5000/create-table </li>
+<li>http://localhost:5000/add-students </li>
+<li>http://localhost:5000/ </li>
+</ul>
+
+```bash
+kubectl port-forward svc/project-flaskapp-app 5000:5000
+Forwarding from 127.0.0.1:5000 -> 5000
+Forwarding from [::1]:5000 -> 5000
+Handling connection for 5000
+Handling connection for 5000
 ```
 
 This is how my kubernetes cluster looks like once whole the manifests have been deployed:
