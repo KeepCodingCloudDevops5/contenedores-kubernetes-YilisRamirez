@@ -8,7 +8,7 @@ spec:
     matchLabels:
       app: mysql
   strategy:
-    type: Recreate 
+    type: Recreate
   template:
     metadata:
       labels:
@@ -22,7 +22,22 @@ spec:
           valueFrom:
             secretKeyRef:
               name: mysql-secret
-              key: rootpassword 
+              key: rootpassword
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: flaskapi-cm
+              key: dbname
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: userpassword
         ports:
         - containerPort: 3306
           name: mysql
