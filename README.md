@@ -265,7 +265,8 @@ metadata:
   namespace: flask-api
 type: Opaque
 data:
-  rootpassword: cGFzc3c=
+  userpassword: c2VjcmV0MTIzNDU=
+  username: dXN1YXJpb2Ri
 ```
 ```bash
 k create -f flaskapi-secrets.yaml
@@ -319,7 +320,7 @@ pvc-618b86aa-310f-426a-8fd1-70d650c1bb42   20Gi       RWO            Delete     
 Now we can run the mysql instance with a deployment workload.
 
 ```bash
-piVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mysql
@@ -344,6 +345,21 @@ spec:
             secretKeyRef:
               name: mysql-secret
               key: rootpassword
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: flaskapi-cm
+              key: dbname
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: userpassword
         ports:
         - containerPort: 3306
           name: mysql
@@ -390,7 +406,7 @@ I have specified the variables MYSQL_HOST and MYSQL_DB into the configmap config
 apiVersion: v1
 data:
   dbname: studentdb
-  host: db
+  host: mysql
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -445,7 +461,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: mysql-secret
-                  key: rootpassword
+                  key: userpassword
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: username
 ```
 Applying the flask app deployment
 
