@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       app: flaskapp
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: flaskapp
-          image: ramirezy/flask-kubernetes
+          image: ramirezy/flask-app
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
@@ -36,6 +36,9 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: mysql-secret
-                  key: rootpassword
-
-
+                  key: userpassword
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: username
