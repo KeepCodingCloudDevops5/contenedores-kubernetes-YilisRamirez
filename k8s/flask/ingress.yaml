@@ -7,8 +7,8 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  -host: foo.bar.com
-  - http:
+  - host: foo.bar.com
+    http:
       paths:
       - path: '/'
         pathType: Prefix
