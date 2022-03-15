@@ -315,6 +315,19 @@ NAME                                       CAPACITY   ACCESS MODES   RECLAIM POL
 pvc-618b86aa-310f-426a-8fd1-70d650c1bb42   20Gi       RWO            Delete           Bound    database/mysql-pv-claim   standard                11h
 ```
 
+We created a configmap file for the database instance in order to make the environment variable (MYSQL_DATABASE) available in the MySQL deployment.
+
+```bash
+apiVersion: v1
+data:
+  dbname: studentdb
+  host: mysql
+kind: ConfigMap
+metadata:
+  name: flaskapi-cm
+  namespace: database
+  ```
+
 <h1>Deploying MySQL in Kubernetess</h1>
 
 Now we can run the mysql instance with a deployment workload.
