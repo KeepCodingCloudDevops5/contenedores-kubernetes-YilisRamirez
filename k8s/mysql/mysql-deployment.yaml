@@ -26,6 +26,7 @@ spec:
         - name: MYSQL_DATABASE
           valueFrom:
             configMapKeyRef:
+              namespace: flask-api
               name: flaskapi-cm
               key: dbname
         - name: MYSQL_USER
