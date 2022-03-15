@@ -4,7 +4,6 @@ data:
   host: mysql
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   name: flaskapi-cm
   namespace: flask-api
 
