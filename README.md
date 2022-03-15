@@ -547,8 +547,8 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  -host: foo.bar.com
-  - http:
+  - host: foo.bar.com
+    http:
       paths:
       - path: '/'
         pathType: Prefix
@@ -571,7 +571,7 @@ AS per the log below, we can see the ingress controller is enabled
 
 ```bash
 kubectl describe svc -n flask-api
-ame:                     flask-service
+Name:                     flask-service
 Namespace:                flask-api
 Labels:                   app=flaskapp
 Annotations:              cloud.google.com/neg: {"ingress":true}
@@ -579,20 +579,21 @@ Selector:                 app=flaskapp
 Type:                     LoadBalancer
 IP Family Policy:         SingleStack
 IP Families:              IPv4
-IP:                       10.80.11.168
-IPs:                      10.80.11.168
-LoadBalancer Ingress:     35.240.60.60
+IP:                       10.80.1.183
+IPs:                      10.80.1.183
+LoadBalancer Ingress:     35.205.88.13
 Port:                     <unset>  5000/TCP
 TargetPort:               5000/TCP
-NodePort:                 <unset>  30209/TCP
-Endpoints:                10.76.0.13:5000
+NodePort:                 <unset>  31506/TCP
+Endpoints:                10.76.0.17:5000
 Session Affinity:         None
 External Traffic Policy:  Cluster
 Events:
   Type    Reason                Age   From                Message
   ----    ------                ----  ----                -------
-  Normal  EnsuringLoadBalancer  59m   service-controller  Ensuring load balancer
-  Normal  EnsuredLoadBalancer   58m   service-controller  Ensured load balancer
+  Normal  EnsuringLoadBalancer  19m   service-controller  Ensuring load balancer
+  Normal  EnsuredLoadBalancer   19m   service-controller  Ensured load balancer
+
 
 ```
 The IP address routes the traffic to Flask app
@@ -607,6 +608,7 @@ apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
   name: flask-ha
+  namespace: flask-api
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
