@@ -587,9 +587,12 @@ k get ingress -n flask-api
 NAME            CLASS    HOSTS         ADDRESS         PORTS   AGE
 flask-ingress   <none>   foo.bar.com   35.241.175.40   80      56m
 ```
-We check the nginx access through this IP address 32.241.175.40
+We can check the nginx access through this IP address 32.241.175.40
 
-AS per the log below, we can see the ingress controller is enabled
+![nginx_access](https://user-images.githubusercontent.com/39458920/158379292-bb9a0301-29d7-47e1-a472-fd1ecd383440.JPG)
+
+
+As per the log below, we can see the ingress controller is enabled
 
 ```bash
 kubectl describe svc -n flask-api
@@ -610,12 +613,7 @@ NodePort:                 <unset>  31506/TCP
 Endpoints:                10.76.0.17:5000
 Session Affinity:         None
 External Traffic Policy:  Cluster
-Events:
-  Type    Reason                Age   From                Message
-  ----    ------                ----  ----                -------
-  Normal  EnsuringLoadBalancer  19m   service-controller  Ensuring load balancer
-  Normal  EnsuredLoadBalancer   19m   service-controller  Ensured load balancer
-
+Events:                   <none>
 
 ```
 
